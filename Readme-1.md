@@ -26,7 +26,7 @@ Item {
 
 Для создание товара мы отправляем следующий запрос:
 
-**POST** `[localhost:8080/items](http://localhost:8080/items)` `{"name":"Cake", "description":"Delicious Cake", "price": 5}`
+**POST** `localhost:8080/items` `{"name":"Cake", "description":"Delicious Cake", "price": 5}`
 
 Сервер должен вернуть следующий результат:
 
