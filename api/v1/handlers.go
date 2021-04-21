@@ -1,11 +1,8 @@
 package v1
 
 import (
+	"fmt"
 	"goarch/app/domain"
-	"goarch/app/domain/cases/item_create"
-	"goarch/app/domain/cases/item_delete"
-	"goarch/app/domain/cases/item_get"
-	"goarch/app/domain/cases/items_get"
 	"goarch/app/presentors/jsonapi"
 	"io/ioutil"
 	"net/http"
@@ -13,7 +10,7 @@ import (
 
 func itemsGetAll(_ map[string]string, conn domain.Connection, _ http.ResponseWriter, _ *http.Request) (int, []byte, error) {
 
-	items, err := items_get.Run(conn)
+	items, err := conn.Item().GetAll()
 	if err != nil {
 		return InternalServerError(err)
 	}
@@ -29,7 +26,13 @@ func itemsGetAll(_ map[string]string, conn domain.Connection, _ http.ResponseWri
 
 func itemGet(v map[string]string, conn domain.Connection, _ http.ResponseWriter, _ *http.Request) (int, []byte, error) {
 
-	item, err := item_get.Run(conn, v["id"])
+	id, ok := v["id"]
+	if !ok {
+		return BadRequest(fmt.Errorf("item id is empty"))
+	}
+
+	item, err := conn.Item().Get(id)
+
 	if err != nil {
 		return InternalServerError(err)
 	}
@@ -55,23 +58,30 @@ func itemCreate(_ map[string]string, conn domain.Connection, _ http.ResponseWrit
 		return BadRequest(err)
 	}
 
-	item, err = item_create.Run(conn, item)
+	item.Id = ""
+
+	item, err = conn.Item().Create(item)
 	if err != nil {
 		return InternalServerError(err)
 	}
+
 	out, err := jsonapi.MarshalItem(item)
 	if err != nil {
 		return InternalServerError(err)
 	}
+
 	return Created(out)
 }
 
 func itemDelete(v map[string]string, conn domain.Connection, _ http.ResponseWriter, _ *http.Request) (int, []byte, error) {
-
-	err := item_delete.Run(conn, v["id"])
+	id, ok := v["id"]
+	if !ok {
+		return BadRequest(fmt.Errorf("item id is empty"))
+	}
+	err := conn.Item().Delete(id)
 	if err != nil {
 		InternalServerError(err)
 	}
 
-	return OK(nil)
+	return NoContent()
 }
