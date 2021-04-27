@@ -1,8 +1,8 @@
 package jsonapi
 
 type Error struct {
-	Status int    `json:"status"`
-	Title  string `json:"title"`
+	Status  int    `json:"status"`
+	Message string `json:"message"`
 }
 
 type ErrorResponse struct {
@@ -12,8 +12,8 @@ type ErrorResponse struct {
 func NewErrorResponse(status int, err error) *ErrorResponse {
 	return &ErrorResponse{
 		Errors: []*Error{{
-			Title:  err.Error(),
-			Status: status,
+			Message: err.Error(),
+			Status:  status,
 		}},
 	}
 }

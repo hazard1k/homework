@@ -16,7 +16,7 @@ type repos struct {
 	itemRepository repositories.ItemRepository
 }
 
-func (c *connection) Item() repositories.ItemRepository {
+func (c *connection) ItemRepository() repositories.ItemRepository {
 	return c.repositories.itemRepository
 }
 
