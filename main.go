@@ -10,6 +10,7 @@ import (
 	"goarch/app/domain"
 	"goarch/app/presentors"
 	"goarch/app/repositories/mongo"
+	"goarch/app/services/discounter"
 	"log"
 	"os"
 	"os/signal"
@@ -48,6 +49,10 @@ func main() {
 	c := &ctx{Conn: connection, Presenters: presenters}
 
 	v1.Register(srv.Router, c)
+
+	discounter := discounter.New(connection.ItemRepository())
+
+	go discounter.Start()
 
 	go srv.Run(fmt.Sprintf(":%d", port))
 

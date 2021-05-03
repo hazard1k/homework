@@ -1,6 +1,7 @@
 package json
 
 import (
+	"encoding/json"
 	"net/http"
 )
 
@@ -12,7 +13,11 @@ type Presenter struct {
 }
 
 func (p *Presenter) RenderError(status int, err error) {
-	panic("implement me")
+	p.W.Header().Set("Content-Type", Header)
+	p.W.WriteHeader(status)
+	e := NewErrorResponse(status, err)
+	b, _ := json.Marshal(e)
+	p.W.Write(b)
 }
 
 func (p *Presenter) RenderSuccess(status int) {

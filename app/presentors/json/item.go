@@ -6,10 +6,17 @@ import (
 )
 
 type item struct {
-	Id          string  `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
+	Id          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Article     string    `json:"article"`
+	Category    string    `json:"category"`
+	Price       itemPrice `json:"price"`
+}
+
+type itemPrice struct {
+	Base       float64 `json:"base"`
+	Discounted float64 `json:"discounted"`
 }
 
 func (i *item) model() *models.Item {
@@ -17,7 +24,10 @@ func (i *item) model() *models.Item {
 		Id:          i.Id,
 		Name:        i.Name,
 		Description: i.Description,
-		Price:       i.Price,
+		Price: models.ItemPrice{
+			Base:       i.Price.Base,
+			Discounted: i.Price.Discounted,
+		},
 	}
 }
 
@@ -26,7 +36,10 @@ func makeItem(i *models.Item) *item {
 		Id:          i.Id,
 		Name:        i.Name,
 		Description: i.Description,
-		Price:       i.Price,
+		Price: itemPrice{
+			Base:       i.Price.Base,
+			Discounted: i.Price.Discounted,
+		},
 	}
 }
 

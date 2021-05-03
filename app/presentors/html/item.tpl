@@ -15,7 +15,18 @@
     {{ .Description}}
 </div>
 <div>
-    {{ .Price}}
+    {{ .Article}}
+</div>
+
+<div>
+    {{ .Category}}
+</div>
+<div>
+    {{ .Price.Base }}
+</div>
+
+<div>
+    {{ .Price.Discounted }}
 </div>
 </body>
 </html>
