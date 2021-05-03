@@ -3,82 +3,76 @@ package v1
 import (
 	"fmt"
 	"goarch/app/domain"
-	"goarch/app/presentors/jsonapi"
+	"goarch/app/presentors/json"
 	"io/ioutil"
 	"net/http"
 )
 
-func itemsGetAll(_ domain.RouteVars, conn domain.Connection, _ *http.Request) (int, []byte, error) {
+func itemsGetAll(_ domain.RouteVars, c domain.Context, _ *http.Request, p domain.Presenter) (int, error) {
 
-	items, err := conn.ItemRepository().GetAll()
+	items, err := c.Connection().ItemRepository().GetAll()
 	if err != nil {
 		return InternalServerError(err)
 	}
 
-	out, err := jsonapi.MarshalItems(items)
-
-	if err != nil {
+	if err := p.Items(items); err != nil {
 		return InternalServerError(err)
 	}
 
-	return OK(out)
+	return OK()
 }
 
-func itemGet(v domain.RouteVars, conn domain.Connection, _ *http.Request) (int, []byte, error) {
+func itemGet(v domain.RouteVars, c domain.Context, r *http.Request, p domain.Presenter) (int, error) {
 
 	id, ok := v.Get("id")
 	if !ok {
 		return BadRequest(fmt.Errorf("item id is empty"))
 	}
 
-	item, err := conn.ItemRepository().Get(id)
-
+	item, err := c.Connection().ItemRepository().Get(id)
 	if err != nil {
 		return InternalServerError(err)
 	}
 
-	out, err := jsonapi.MarshalItem(item)
-
-	if err != nil {
+	if err := p.Item(item); err != nil {
 		return InternalServerError(err)
 	}
 
-	return OK(out)
+	return OK()
 }
 
-func itemCreate(_ domain.RouteVars, conn domain.Connection, r *http.Request) (int, []byte, error) {
+func itemCreate(_ domain.RouteVars, c domain.Context, r *http.Request, p domain.Presenter) (int, error) {
 
 	in, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return BadRequest(err)
 	}
 
-	item, err := jsonapi.UnmarshalItem(in)
+	item, err := json.UnmarshalItem(in)
 	if err != nil {
 		return BadRequest(err)
 	}
 
 	item.Id = ""
 
-	item, err = conn.ItemRepository().Create(item)
+	item, err = c.Connection().ItemRepository().Create(item)
 	if err != nil {
 		return InternalServerError(err)
 	}
 
-	out, err := jsonapi.MarshalItem(item)
-	if err != nil {
+	if err := p.Item(item); err != nil {
 		return InternalServerError(err)
 	}
 
-	return Created(out)
+	return Created()
 }
 
-func itemDelete(v domain.RouteVars, conn domain.Connection, _ *http.Request) (int, []byte, error) {
-	id, ok := v["id"]
+func itemDelete(v domain.RouteVars, c domain.Context, _ *http.Request, p domain.Presenter) (int, error) {
+	id, ok := v.Get("id")
 	if !ok {
 		return BadRequest(fmt.Errorf("item id is empty"))
 	}
-	err := conn.ItemRepository().Delete(id)
+	err := c.Connection().ItemRepository().Delete(id)
 	if err != nil {
 		InternalServerError(err)
 	}

@@ -1,4 +1,4 @@
-package jsonapi
+package json
 
 type Error struct {
 	Status  int    `json:"status"`

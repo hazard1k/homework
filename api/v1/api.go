@@ -8,9 +8,9 @@ import (
 
 const ApiPrefix = "/v1"
 
-func Register(r *mux.Router, connection domain.Connection) {
+func Register(r *mux.Router, c domain.Context) {
 	router := r.PathPrefix(ApiPrefix).Subrouter()
-	handle := wrap(router, connection)
+	handle := wrap(router, c)
 
 	handle(http.MethodGet, "/items", itemsGetAll)
 	handle(http.MethodGet, "/items/{id}", itemGet)

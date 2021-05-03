@@ -7,18 +7,20 @@ import (
 )
 
 type handleFunc func(method, path string, callable handlerFunc)
-type handlerFunc func(v domain.RouteVars, conn domain.Connection, r *http.Request) (int, []byte, error)
+type handlerFunc func(v domain.RouteVars, ctx domain.Context, r *http.Request, p domain.Presenter) (int, error)
 
-func wrap(r *mux.Router, conn domain.Connection) handleFunc {
+func wrap(r *mux.Router, ctx domain.Context) handleFunc {
 	internalWrapper := func(callable handlerFunc) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
 
-			status, response, err := callable(mux.Vars(r), conn, r)
+			p := ctx.PresentersFactory().Make(r.URL.Query().Get("format"), w)
+
+			status, err := callable(mux.Vars(r), ctx, r, p)
 
 			if err != nil {
-				JsonError(w, status, err)
+				p.RenderError(status, err)
 			} else {
-				JsonSuccess(w, response)
+				p.RenderSuccess(status)
 			}
 		}
 	}
