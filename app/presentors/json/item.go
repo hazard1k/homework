@@ -1,4 +1,4 @@
-package jsonapi
+package json
 
 import (
 	"encoding/json"
@@ -30,18 +30,28 @@ func makeItem(i *models.Item) *item {
 	}
 }
 
-func MarshalItem(item *models.Item) ([]byte, error) {
-	return json.Marshal(item)
+func (p *Presenter) Item(item *models.Item) error {
+	b, err := json.Marshal(makeItem(item))
+	if err == nil {
+		p.body = b
+	}
+
+	return err
 }
 
-func MarshalItems(items []*models.Item) ([]byte, error) {
+func (p *Presenter) Items(items []*models.Item) error {
 	result := make([]*item, len(items))
 
 	for i, item := range items {
 		result[i] = makeItem(item)
 	}
 
-	return json.Marshal(result)
+	b, err := json.Marshal(result)
+	if err == nil {
+		p.body = b
+	}
+
+	return err
 }
 
 func UnmarshalItem(body []byte) (*models.Item, error) {
