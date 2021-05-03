@@ -7,12 +7,28 @@ import (
 	"github.com/gorilla/mux"
 	v1 "goarch/api/v1"
 	"goarch/app"
+	"goarch/app/domain"
+	"goarch/app/presentors"
 	"goarch/app/repositories/mongo"
+	"goarch/app/services/discounter"
 	"log"
 	"os"
 	"os/signal"
 	"time"
 )
+
+type ctx struct {
+	Conn       domain.Connection
+	Presenters domain.Presenters
+}
+
+func (c *ctx) Connection() domain.Connection {
+	return c.Conn
+}
+
+func (c *ctx) PresentersFactory() domain.Presenters {
+	return c.Presenters
+}
 
 func main() {
 	var wait time.Duration
@@ -28,17 +44,25 @@ func main() {
 		log.Fatalf("unable to create connection due: %s", err)
 	}
 
-	v1.Register(srv.Router, connection)
+	presenters := presentors.PresentersFactory()
+
+	c := &ctx{Conn: connection, Presenters: presenters}
+
+	v1.Register(srv.Router, c)
+
+	discounter := discounter.New(connection.ItemRepository())
+
+	go discounter.Start()
 
 	go srv.Run(fmt.Sprintf(":%d", port))
 
 	log.Printf("service running on port %d", port)
 
-	c := make(chan os.Signal, 1)
+	stopCh := make(chan os.Signal, 1)
 
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(stopCh, os.Interrupt)
 
-	<-c
+	<-stopCh
 
 	ctx, cancel := context.WithTimeout(context.Background(), wait)
 	defer cancel()
