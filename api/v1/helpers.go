@@ -38,3 +38,7 @@ func OK(body []byte) (int, []byte, error) {
 func Created(body []byte) (int, []byte, error) {
 	return http.StatusCreated, body, nil
 }
+
+func NoContent() (int, []byte, error) {
+	return http.StatusNoContent, nil, nil
+}
